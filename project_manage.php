@@ -565,5 +565,4 @@ $is_closed = ($proj['status'] == 'Closed');
     }
 </script>
 </body>
-
 </html>

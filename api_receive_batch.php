@@ -35,7 +35,7 @@ foreach ($items as $item) {
         $conn->query("UPDATE products SET quantity = quantity + 1 WHERE barcode = '$barcode'");
 
         // 4. บันทึกประวัติ (History) ว่า "import" พร้อมชื่อผู้รับของ
-        $stmt = $conn->prepare("INSERT INTO product_history (serial_number, action_type, operator, note) VALUES (?, 'import', ?, 'รับสินค้าเข้าใหม่')");
+        $stmt = $conn->prepare("INSERT INTO product_history (serial_number, action_type, operator, note) VALUES (?, 'import', ?, '')");
         $stmt->bind_param("ss", $sn, $operator);
         $stmt->execute();
         
