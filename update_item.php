@@ -5,11 +5,11 @@ if(isset($_POST['id'])){
     $id = $_POST['id'];
     $name = $conn->real_escape_string($_POST['name']);
     $price = $_POST['price'];
-    $unit = $conn->real_escape_string($_POST['unit']);
     
-    // รับค่าที่เป็นข้อความจากหน้าเว็บ (Type & Supplier)
+    // รับค่าที่เป็นข้อความจากหน้าเว็บ (Type, Supplier & Unit)
     $type_input = trim($_POST['type']);
     $supplier_input = trim($_POST['supplier']);
+    $unit_input = trim($_POST['unit']);
 
     // --- ฟังก์ชันหา ID หรือสร้างใหม่ (Logic เดียวกับ api_add_product) ---
     function getOrCreateID($conn, $table, $col, $val) {
@@ -31,17 +31,18 @@ if(isset($_POST['id'])){
     }
     // ----------------------------------------------------------------
 
-    // แปลงข้อความให้เป็น ID
+    // แปลงข้อความให้เป็น ID ทั้ง 3 ตาราง
     $type_id = getOrCreateID($conn, 'product_types', 'name', $type_input);
     $supplier_id = getOrCreateID($conn, 'suppliers', 'name', $supplier_input);
+    $unit_id = getOrCreateID($conn, 'units', 'name', $unit_input); // <--- เพิ่มของหน่วยนับ
 
-    // อัปเดตข้อมูลลงตาราง products (ใช้ type_id และ supplier_id)
+    // อัปเดตข้อมูลลงตาราง products (ใช้ type_id, supplier_id และ unit_id)
     $sql = "UPDATE products SET 
             name='$name', 
             type_id=$type_id, 
             supplier_id=$supplier_id, 
-            price_sell='$price', 
-            unit='$unit' 
+            unit_id=$unit_id, 
+            price_sell='$price' 
             WHERE id=$id";
 
     if($conn->query($sql) === TRUE) {
