@@ -8,7 +8,7 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>ประวัติการทำรายการ - Stock</title>
+    <title>ประวัติรับเข้า/เบิกออก - Stock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,6 +38,16 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
         }
         .header-select:focus { outline: none; box-shadow: none; }
         .header-select option { color: #000; font-weight: normal; }
+
+        /* [✨] เพิ่ม Effect ตอนชี้เมาส์ที่ลิงก์ S/N */
+        .sn-link {
+            transition: 0.2s;
+            text-decoration: none;
+        }
+        .sn-link:hover {
+            text-decoration: underline;
+            color: #1d4ed8 !important; /* น้ำเงินเข้มขึ้นตอนชี้ */
+        }
     </style>
 </head>
 <body>
@@ -102,12 +112,12 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                             $display_project_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
                         }
                         
-                        // [✨] จัดการการแสดงผล "ที่อยู่ (โปรเจกต์)"
+                        // จัดการการแสดงผล "ที่อยู่ (โปรเจกต์)"
                         $project_info = '-'; // ค่าเริ่มต้น
                         if($row['action_type'] == 'import' || $row['action_type'] == 'return') {
                              $project_info = '<div class="small text-muted fst-italic"><i class="fas fa-warehouse text-secondary me-1"></i>คลังสินค้า</div>';
                         } elseif ($display_project_name) {
-                             $project_info = '<div class="small fw-bold"><i class="fas fa-folder text-warning me-1"></i>'.$display_project_name.'</div>';
+                             $project_info = '<div class="small fw-bold"><i class="fas fa-hard-hat me-2"></i>'.$display_project_name.'</div>';
                         }
 
                         $operator = $row['operator'] ? '<i class="fas fa-user-circle text-secondary me-1"></i> '.$row['operator'] : '-';
@@ -116,7 +126,12 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                         <td class="small"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
                         <td class="text-center"><?php echo $badge; ?></td>
                         <td><?php echo $operator; ?></td>
-                        <td class="fw-bold text-primary"><?php echo $row['serial_number']; ?></td>
+                        
+                        <td class="fw-bold">
+                            <a href="history_view.php?sn=<?php echo urlencode($row['serial_number']); ?>" class="text-primary sn-link">
+                                 <i class="fas fa-search small me-1"></i><?php echo htmlspecialchars($row['serial_number']); ?>
+                            </a>
+                        </td>
                         
                         <td>
                             <div class="fw-bold text-dark"><?php echo $pro_name; ?></div>
@@ -153,7 +168,6 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
         $('#historyTable').DataTable({
             "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
             "order": [[ 0, "desc" ]], 
-            // [✨] อัปเดตเป้าหมายคอลัมน์ที่ไม่ให้ sort (เพราะเราเพิ่มคอลัมน์มา 1 อัน)
             "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ] 
         });
     });

@@ -245,6 +245,19 @@ $serials = $conn->query($sql_sn);
             }
         })
     }
+    // [✨] ฟังก์ชันกด Esc เพื่อย้อนกลับ (product_details.php)
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            // เช็คว่ามี Bootstrap Modal หรือ SweetAlert เปิดอยู่หรือไม่
+            let isModalOpen = document.body.classList.contains('modal-open');
+            let isSwalOpen = document.body.classList.contains('swal2-shown');
+            
+            // ถ้าไม่มี Popup เปิดอยู่ ให้เด้งกลับไปหน้า products.php
+            if (!isModalOpen && !isSwalOpen) {
+                window.location.href = 'products.php';
+            }
+        }
+    });
 </script>
 
 </body>

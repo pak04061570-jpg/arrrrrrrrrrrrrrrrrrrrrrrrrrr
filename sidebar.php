@@ -17,8 +17,8 @@ $page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-boxes"></i> ภาพรวมคลังสินค้า
         </a>
 
-        <a class="nav-link <?php echo ($page == 'history_log.php') ? 'active' : ''; ?>" href="history_log.php">
-            <i class="fas fa-history"></i> ประวัติเข้า-ออก
+        <a class="nav-link <?php echo ($page == 'history_log.php' || $page == 'history_view.php') ? 'active' : ''; ?>" href="history_log.php">
+            <i class="fas fa-history"></i> ประวัติรับเข้า-เบิกออก
         </a>
     </nav>
 </div>

@@ -12,7 +12,7 @@ $is_closed = ($proj['status'] == 'Closed');
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>จัดการ: <?php echo htmlspecialchars($proj['project_name']); ?></title>
+    <title>จัดการโครงการ: <?php echo htmlspecialchars($proj['project_name']); ?></title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -59,7 +59,7 @@ $is_closed = ($proj['status'] == 'Closed');
     
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <a href="projects.php" class="btn btn-outline-secondary mb-3 rounded-pill btn-sm">
+            <a href="projects.php" class="btn btn-outline-secondary mb-4 rounded-pill px-4">
                 <i class="fas fa-arrow-left me-1"></i> ย้อนกลับ 
             </a>
 
@@ -585,6 +585,19 @@ $is_closed = ($proj['status'] == 'Closed');
             }
         })
     }
+    // [✨] ฟังก์ชันกด Esc เพื่อย้อนกลับ (project_manage.php)
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            // เช็คว่ามี Bootstrap Modal (หน้าต่างเลือกสินค้า) หรือ SweetAlert เปิดอยู่หรือไม่
+            let isModalOpen = document.body.classList.contains('modal-open');
+            let isSwalOpen = document.body.classList.contains('swal2-shown');
+            
+            // ถ้าไม่มี Popup เปิดอยู่ ให้เด้งกลับไปหน้า projects.php
+            if (!isModalOpen && !isSwalOpen) {
+                window.location.href = 'projects.php';
+            }
+        }
+    });
 </script>
 </body>
 </html>
