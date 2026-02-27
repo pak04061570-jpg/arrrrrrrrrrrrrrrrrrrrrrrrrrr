@@ -3,7 +3,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Stock - คลังสินค้าหลัก</title>
+    <title>รับสินค้าเข้าคลัง - Stock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +11,7 @@
     
     <style>
         :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f1f5f9; }
-        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); color: #334155; }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg); color: #0a0d12; }
         
         /* Sidebar Styling */
         .sidebar { background: var(--primary); min-height: 100vh; width: 260px; position: fixed; top: 0; left: 0; padding-top: 20px; z-index: 1000; }
@@ -41,7 +41,7 @@
     
     <div class="card card-custom mb-4">
         <div class="card-header-custom d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold m-0 text-primary"><i class="fas fa-plus-circle me-2 text-success"></i>รับสินค้าเข้าคลัง (Register Stock)</h5>
+            <h5 class="fw-bold m-0 text-secondary"><i class="fas fa-plus-circle me-2 text-success"></i>รับสินค้าเข้าคลัง (Register Stock)</h5>
             <button class="btn btn-warning text-dark btn-sm fw-bold px-3 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#newProductModal">
                 <i class="fas fa-plus me-1"></i> เพิ่มสินค้าใหม่
             </button>
@@ -100,7 +100,7 @@
 
     <div class="card card-custom">
         <div class="card-header-custom">
-            <h5 class="fw-bold m-0 text-secondary"><i class="fas fa-boxes me-2"></i>สินค้าคงเหลือในคลัง</h5>
+            <h5 class="fw-bold m-0 text-secondary"><i class="fas fa-boxes me-2"></i>สินค้าในคลัง</h5>
         </div>
         <div class="card-body p-0">
             <?php include 'load_table_pro.php'; ?>
@@ -450,24 +450,7 @@ function saveEdit(){
 </script>
 
 
-<script src="https://unpkg.com/live2d-widget/lib/L2Dwidget.min.js"></script>
-<script>
-    L2Dwidget.init({
-        "model": {
-            // 🔥 เปลี่ยนบรรทัดนี้เป็นลิ้งค์ของตัวที่ชอบด้านบน
-            "jsonPath": "https://unpkg.com/live2d-widget-model-tororo@1.0.5/assets/tororo.model.json",
-            "scale": 1
-        },
-        "display": {
-            "position": "left",
-            "width": 150,
-            "height": 300,
-            "hOffset": 0,
-            "vOffset": -20
-        },
-        "mobile": { "show": true, "scale": 0.5 },
-        "react": { "opacityDefault": 0.7, "opacityOnHover": 1 }
-    });
+
 </script>
 
 </body>

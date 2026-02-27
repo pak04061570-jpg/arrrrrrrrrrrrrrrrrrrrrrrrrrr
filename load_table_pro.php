@@ -17,13 +17,13 @@ $result = $conn->query($sql);
 <table id="proTable" class="table table-hover align-middle w-100">
     <thead class="table-light">
         <tr>
-            <th width="15%">SKU / Code</th>
+            <th width="15%">SKU / รหัส</th>
             <th width="30%">สินค้า</th>
             <th width="15%">ประเภท</th>
             <th width="15%">Supplier</th>
             
             <th class="text-end">ราคา</th>
-            <th class="text-center">สถานะ</th>
+            <th class="text-center">คงเหลือ</th>
             <th class="text-center">จัดการ</th>
         </tr>
     </thead>
@@ -58,21 +58,10 @@ $result = $conn->query($sql);
                 <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" 
                    class="btn btn-sm btn-outline-primary rounded-pill me-1" 
                    title="ดู Serial Number">
-                    <i class="fas fa-barcode"></i> S/N
+                    <i class="fas fa-eye me-1"></i> ดู/แก้ไข
                 </a>
                 
-                <button class="btn btn-sm btn-outline-warning rounded-pill px-3" 
-                    onclick="openEditModal(
-                        <?php echo $row['id']; ?>, 
-                        '<?php echo $row['name']; ?>', 
-                        '<?php echo $row['type_name']; ?>',     /* แก้เป็น type_name */
-                        '<?php echo $row['supplier_name']; ?>', /* แก้เป็น supplier_name */
-                        <?php echo $row['price_sell']; ?>, 
-                        <?php echo $row['quantity']; ?>, 
-                        '<?php echo $row['unit_name']; ?>'
-                    )">
-                    <i class="fas fa-pen me-1"></i> แก้ไข
-                </button>
+                
             </td>
         </tr>
         <?php endwhile; ?>

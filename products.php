@@ -42,7 +42,7 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
 
 <div class="main-content">
     
-    <h4 class="fw-bold mb-4 text-secondary"><i class="fas fa-chart-pie me-2"></i>ภาพรวมคลังสินค้า</h4>
+    <h4 class="fw-bold mb-4 text-secondary"><i class="fas fa-boxes text-secondary me-2"></i>ภาพรวมคลังสินค้า</h4>
     <div class="row g-3 mb-4">
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><p>รายการสินค้า (SKUs)</p><h2><?php echo number_format($stat_items); ?></h2><i class="fas fa-tags stat-icon"></i></div></div>
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #10b981, #059669);"><p>จำนวนชิ้นรวม (Units)</p><h2><?php echo number_format($stat_qty); ?></h2><i class="fas fa-cubes stat-icon"></i></div></div>
@@ -89,14 +89,22 @@ while($row = $result->fetch_assoc()):
     else $status = '<span class="badge bg-success-subtle text-success border border-success">ปกติ</span>';
 ?>
 <tr>
-    <td><span class="fw-bold text-dark"><?php echo $row['barcode']; ?></span></td>
+    <td><span class="badge bg-light text-dark border"><?php echo $row['barcode']; ?></span></td>
         <td>
             <div class="fw-bold"><?php echo $row['name']; ?></div>
             <small class="text-muted">หน่วย: <?php echo $row['unit']; ?></small>
         </td>
-        
-        <td><?php echo $row['type_name']; ?></td>
-    <td><?php echo $row['supplier_name']; ?></td>
+        <td>
+                
+        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                    <?php echo $row['type_name']; ?>
+                </span>
+            </td>
+        <td>
+                <small class="text-secondary">
+                    <i class="fas fa-store me-1"></i><?php echo $row['supplier_name']; ?>
+                </small>
+            </td>
         
         <td class="text-end"><?php echo number_format($row['price_sell'], 2); ?></td>
         <td class="text-center"><span class="fw-bold fs-5"><?php echo $row['quantity']; ?></span></td>

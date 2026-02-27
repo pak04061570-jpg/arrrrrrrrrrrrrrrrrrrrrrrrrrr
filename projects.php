@@ -3,7 +3,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>จัดการโปรเจกต์ - ProStock</title>
+    <title>รายการโครงการ - Stock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            color: #ef4444; /* สีแดง */
+            color: #ef4444;
             background: rgba(239, 68, 68, 0.1);
             border: none;
             border-radius: 50%;
@@ -47,7 +47,7 @@
 <div class="main-content">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold"><i class="fas fa-folder-open me-2 text-warning"></i>รายการโปรเจกต์ (Projects)</h4>
+        <h4 class="fw-bold mb-0 text-secondary"><i class="fas fa-hard-hat me-2"></i>รายการโครงการ (Projects)</h4>
         <button class="btn btn-primary rounded-pill px-4" onclick="createProject()">
             <i class="fas fa-plus me-2"></i> เปิดไซต์งานใหม่
         </button>
@@ -80,7 +80,7 @@
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-3">
-                        <span class="text-secondary">จำนวนของในไซต์</span>
+                        <span class="text-secondary">จำนวนของในโครงการ</span>
                         <span class="fw-bold text-primary fs-5"><?php echo $count; ?> ชิ้น</span>
                     </div>
 

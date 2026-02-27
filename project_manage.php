@@ -1,7 +1,7 @@
 <?php 
 include 'db_connect.php'; 
 
-$pid = $_GET['id'];
+$pid = isset($_GET['id']) ? $_GET['id'] : 0;
 $proj = $conn->query("SELECT * FROM projects WHERE id = $pid")->fetch_assoc();
 if(!$proj) die("ไม่พบข้อมูลโปรเจกต์");
 
@@ -12,7 +12,7 @@ $is_closed = ($proj['status'] == 'Closed');
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>จัดการ: <?php echo $proj['project_name']; ?></title>
+    <title>จัดการ: <?php echo htmlspecialchars($proj['project_name']); ?></title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -57,35 +57,43 @@ $is_closed = ($proj['status'] == 'Closed');
 
 <div class="main-content">
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <a href="projects.php" class="text-muted text-decoration-none small"><i class="fas fa-arrow-left"></i> กลับหน้ารวม</a>
-            <div class="d-flex align-items-center mt-1">
-                <h3 class="fw-bold text-primary m-0 me-2">
-                    <i class="fas fa-clipboard-check me-2"></i><?php echo $proj['project_name']; ?>
-                </h3>
-                <?php if(!$is_closed): ?>
-                <button class="btn btn-sm btn-light text-muted" onclick="editProjectInfo()">
-                      <i class="fas fa-pen"></i> แก้ไขข้อมูล
-                </button>
-                <?php endif; ?>
+            <a href="projects.php" class="btn btn-outline-secondary mb-3 rounded-pill btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> ย้อนกลับ 
+            </a>
+
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <h3 class="fw-bold text-primary m-0">
+                        <i class="fas fa-clipboard-check me-2"></i><?php echo htmlspecialchars($proj['project_name']); ?>
+                    </h3>
+                    
+                    <?php if(!$is_closed): ?>
+                        <button class="btn btn-light btn-sm text-muted rounded-pill border" onclick="editProjectInfo()">
+                            <i class="fas fa-pen"></i> แก้ไขข้อมูลโครงการ
+                        </button>
+                    <?php endif; ?>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-secondary fs-6">Job: <?php echo htmlspecialchars($proj['project_code']); ?></span>
+                    <?php if($is_closed): ?>
+                        <span class="badge bg-danger"><i class="fas fa-lock"></i> ปิดงานแล้ว (Closed)</span>
+                    <?php else: ?>
+                        <span class="badge bg-success">กำลังดำเนินการ (Open)</span>
+                    <?php endif; ?>
+                </div>
             </div>
-            
-            <span class="badge bg-secondary fs-6">Job: <?php echo $proj['project_code']; ?></span>
-            <?php if($is_closed): ?>
-                <span class="badge bg-danger"><i class="fas fa-lock"></i> ปิดงานแล้ว (Closed)</span>
-            <?php else: ?>
-                <span class="badge bg-success">กำลังดำเนินการ (Open)</span>
-            <?php endif; ?>
         </div>
 
-        <div>
-            <a href="print_job.php?id=<?php echo $pid; ?>" target="_blank" class="btn btn-outline-secondary rounded-pill px-3 me-2">
+        <div class="d-flex gap-2 align-items-center mt-4">
+            <a href="print_job.php?id=<?php echo $pid; ?>" target="_blank" class="btn btn-outline-secondary rounded-pill px-3">
                 <i class="fas fa-print me-2"></i> พิมพ์ใบเบิก/ใบคืน
             </a>
             <?php if(!$is_closed): ?>
             <button class="btn btn-danger rounded-pill px-3" onclick="closeJob()">
-                <i class="fas fa-flag-checkered me-2"></i> ปิดจ็อบงานนี้
+                <i class="fas fa-flag-checkered me-2"></i> ปิดโครงงานนี้
             </button>
             <?php endif; ?>
         </div>
@@ -96,7 +104,7 @@ $is_closed = ($proj['status'] == 'Closed');
         <div class="col-md-12">
             <div class="card card-custom">
                 <div class="card-header-custom bg-primary text-white">
-                    <h5 class="m-0 fw-bold"><i class="fas fa-dolly me-2"></i>เบิกของเข้าไซต์งานนี้</h5>
+                    <h5 class="m-0 fw-bold"><i class="fas fa-dolly me-2"></i>เบิกของเข้าโครงการนี้</h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="row">
@@ -107,7 +115,7 @@ $is_closed = ($proj['status'] == 'Closed');
                                 <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="ยิง S/N ที่นี่ (กด Enter เพื่อเพิ่ม)" autofocus autocomplete="off">
                                 <button class="btn btn-primary" onclick="addToQueue()"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
                             </div>
-                            <div class="form-text text-muted">* ระบบจะตรวจสอบสถานะสินค้าทันทีที่สแกน</div>
+                            <div class="form-text text-muted"></div>
                         </div>
 
                         <div class="col-md-6 ps-4">
@@ -173,7 +181,6 @@ $is_closed = ($proj['status'] == 'Closed');
                             <?php endif; ?>
 
                             <th class="ps-4 text-center" width="50">No.</th>
-
                             <th class="<?php echo $is_closed ? 'ps-4' : ''; ?>">ชื่อสินค้า</th>
                             <th>Serial Number</th>
                             <th class="text-center">วันที่เบิก</th>
@@ -200,7 +207,7 @@ $is_closed = ($proj['status'] == 'Closed');
 
                             <td class="ps-4 text-center text-muted"><?php echo $i; ?></td>
 
-                            <td class="<?php echo $is_closed ? 'ps-4 fw-bold' : 'fw-bold'; ?>"><?php echo $item['name']; ?></td>
+                            <td class="<?php echo $is_closed ? 'ps-4 fw-bold' : 'fw-bold'; ?>"><?php echo htmlspecialchars($item['name']); ?></td>
                             <td><span class="badge bg-light text-dark border px-3 py-2 fs-6"><?php echo $item['serial_number']; ?></span></td>
                             <td class="text-center text-muted small"><?php echo date('d/m/Y H:i', strtotime($item['date_added'])); ?></td>
                             <td class="text-center">
@@ -246,7 +253,7 @@ $is_closed = ($proj['status'] == 'Closed');
                     <div class="accordion-item search-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c<?php echo $i; ?>">
-                                <span class="prod-name fw-bold"><?php echo $name; ?></span>
+                                <span class="prod-name fw-bold"><?php echo htmlspecialchars($name); ?></span>
                                 <span class="badge bg-success ms-auto"><?php echo count($list); ?></span>
                             </button>
                         </h2>
@@ -524,27 +531,42 @@ $is_closed = ($proj['status'] == 'Closed');
         });
     }
     
+    // [✨ แก้ไขแล้ว] ฟังก์ชันแก้ไขข้อมูลโครงการ
     async function editProjectInfo() {
         const { value: formValues } = await Swal.fire({
-            title: 'แก้ไขข้อมูลโปรเจกต์',
-            html:
-                '<div class="text-start mb-2"><label class="fw-bold">รหัสโปรเจกต์</label></div>' +
-                '<input id="swal-input1" class="swal2-input mb-3 w-100 m-0" placeholder="เช่น JOB-2024-A01" value="<?php echo $proj['project_code']; ?>">' +
-                '<div class="text-start mb-2"><label class="fw-bold">ชื่อโปรเจกต์</label></div>' +
-                '<input id="swal-input2" class="swal2-input w-100 m-0" placeholder="ชื่อโครงการ" value="<?php echo $proj['project_name']; ?>">',
+            title: 'แก้ไขข้อมูลโครงงาน',
+            // ใช้ Backticks (`) เพื่อให้ใส่ HTML ได้ง่าย และเลี่ยงปัญหา Quote ชนกัน
+            html: `
+                <div class="text-start mb-2"><label class="fw-bold">รหัสโครงการ</label></div>
+                <input id="swal-input1" class="swal2-input mb-3 w-100 m-0" placeholder="เช่น JOB-2024-A01" value="<?php echo htmlspecialchars($proj['project_code']); ?>">
+                <div class="text-start mb-2"><label class="fw-bold">ชื่อโครงการ</label></div>
+                <input id="swal-input2" class="swal2-input w-100 m-0" placeholder="ชื่อโครงการ" value="<?php echo htmlspecialchars($proj['project_name']); ?>">
+            `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'บันทึก',
             cancelButtonText: 'ยกเลิก',
-            preConfirm: () => { return [ document.getElementById('swal-input1').value, document.getElementById('swal-input2').value ] }
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input1').value,
+                    document.getElementById('swal-input2').value
+                ]
+            }
         });
 
         if (formValues) {
             let newCode = formValues[0];
             let newName = formValues[1];
             if(!newCode || !newName) { Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning'); return; }
+            
             $.post("api_project.php", { action: 'edit_info', id: pid, code: newCode, name: newName }, function(res) {
-                Swal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย', 'success').then(() => { location.reload(); });
+                // เช็คว่าสำเร็จหรือไม่ (ถ้า api_project.php echo success)
+                if(res.trim() === 'success') {
+                    Swal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย', 'success').then(() => { location.reload(); });
+                } else {
+                    // ถ้า api ส่ง error กลับมา
+                    Swal.fire('Error', 'เกิดข้อผิดพลาด: ' + res, 'error');
+                }
             });
         }
     }

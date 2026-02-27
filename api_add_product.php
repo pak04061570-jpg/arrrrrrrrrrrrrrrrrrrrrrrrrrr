@@ -8,7 +8,7 @@ $price    = $conn->real_escape_string($_POST['price']);
 // รับค่า (ตัดช่องว่าง)
 $type_input     = trim($_POST['type']);
 $supplier_input = trim($_POST['supplier']);
-$unit_input     = trim($_POST['unit']); // รับค่าหน่วยสินค้า
+$unit_input     = trim($_POST['unit']); 
 
 // --------------------------------------------------------------------------
 // ฟังก์ชัน: หา ID จากชื่อ (ถ้าไม่มีให้สร้างใหม่)

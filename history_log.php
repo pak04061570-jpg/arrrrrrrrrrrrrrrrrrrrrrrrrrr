@@ -54,8 +54,8 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
             <table id="historyTable" class="table table-hover w-100 align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th width="15%">วัน/เวลา</th>
-                        <th width="12%" class="text-center p-0 align-middle">
+                        <th width="12%">วัน/เวลา</th>
+                        <th width="10%" class="text-center p-0 align-middle">
                             <select class="form-select form-select-sm header-select" onchange="location.href='?type='+this.value">
                                 <option value="" <?php echo $filter_type == '' ? 'selected' : ''; ?>>ทุกประเภท</option>
                                 <option value="import" <?php echo $filter_type == 'import' ? 'selected' : ''; ?>>รับเข้า</option>
@@ -63,15 +63,14 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                                 <option value="return" <?php echo $filter_type == 'return' ? 'selected' : ''; ?>>รับคืน</option>
                             </select>
                         </th>
-                        <th width="15%">ผู้ทำรายการ</th>
-                        <th width="15%">S/N</th>
-                        <th width="20%">ชื่อสินค้า & ที่อยู่</th>
-                        <th width="23%">หมายเหตุ</th>
+                        <th width="12%">ผู้ทำรายการ</th>
+                        <th width="12%">S/N</th>
+                        <th width="20%">ชื่อสินค้า</th>
+                        <th width="15%">ที่อยู่ (โครงการ)</th> <th width="19%">หมายเหตุ</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php 
-                    // [✨] Query ใหม่: ดึง project_name จากทั้ง product_history (h) และ projects (p)
                     $sql = "SELECT h.*, 
                                    h.project_name AS snapshot_name, 
                                    p.project_name AS current_name,
@@ -97,21 +96,20 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                         
                         $pro_name = $row['product_name'] ? $row['product_name'] : '<span class="text-muted small">- ไม่พบชื่อสินค้า -</span>';
                         
-                        // [✨] Logic: เลือกชื่อที่ถูกต้อง
-                        // 1. ถ้ามีชื่อในประวัติ (Snapshot) ให้ใช้ก่อน (ปลอดภัยสุด)
-                        // 2. ถ้าไม่มี (ข้อมูลเก่า) ค่อยใช้ชื่อปัจจุบันจากตาราง projects
                         $display_project_name = !empty($row['snapshot_name']) ? $row['snapshot_name'] : $row['current_name'];
 
-                        // ถ้ายังไม่มีชื่อแต่มี ID (แสดงว่าโดนลบไปแล้วและเป็นข้อมูลเก่ามาก)
                         if (empty($display_project_name) && !empty($row['project_id'])) {
                             $display_project_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
                         }
-
-                        $project_info = '';
-                        if($display_project_name) {
-                            $project_info = '<div class="small text-muted mt-1"><i class="fas fa-folder text-warning me-1"></i>'.$display_project_name.'</div>';
-                        }
                         
+                        // [✨] จัดการการแสดงผล "ที่อยู่ (โปรเจกต์)"
+                        $project_info = '-'; // ค่าเริ่มต้น
+                        if($row['action_type'] == 'import' || $row['action_type'] == 'return') {
+                             $project_info = '<div class="small text-muted fst-italic"><i class="fas fa-warehouse text-secondary me-1"></i>คลังสินค้า</div>';
+                        } elseif ($display_project_name) {
+                             $project_info = '<div class="small fw-bold"><i class="fas fa-folder text-warning me-1"></i>'.$display_project_name.'</div>';
+                        }
+
                         $operator = $row['operator'] ? '<i class="fas fa-user-circle text-secondary me-1"></i> '.$row['operator'] : '-';
                     ?>
                     <tr>
@@ -122,12 +120,15 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                         
                         <td>
                             <div class="fw-bold text-dark"><?php echo $pro_name; ?></div>
+                        </td>
+
+                        <td>
                             <?php echo $project_info; ?>
                         </td>
 
                         <td>
                             <div class="d-flex justify-content-between align-items-center">
-                                <div style="max-width: 250px;" class="text-truncate text-muted small fst-italic" title="<?php echo htmlspecialchars($row['note']); ?>">
+                                <div style="max-width: 200px;" class="text-truncate text-muted small fst-italic" title="<?php echo htmlspecialchars($row['note']); ?>">
                                     <span id="note_<?php echo $row['id']; ?>"><?php echo $row['note']; ?></span>
                                 </div>
                                 <i class="fas fa-pen btn-edit-note ms-2" style="flex-shrink: 0;" onclick="editNote(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['note'], ENT_QUOTES); ?>')"></i>
@@ -152,7 +153,8 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
         $('#historyTable').DataTable({
             "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
             "order": [[ 0, "desc" ]], 
-            "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5] } ]
+            // [✨] อัปเดตเป้าหมายคอลัมน์ที่ไม่ให้ sort (เพราะเราเพิ่มคอลัมน์มา 1 อัน)
+            "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ] 
         });
     });
 
