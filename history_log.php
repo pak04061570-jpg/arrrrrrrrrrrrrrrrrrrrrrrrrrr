@@ -1,9 +1,4 @@
-<?php include 'db_connect.php'; 
-
-// รับค่าจากตัวกรอง (ถ้ามี)
-$filter_type = isset($_GET['type']) ? $_GET['type'] : '';
-
-?>
+<?php include 'db_connect.php'; ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -39,14 +34,13 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
         .header-select:focus { outline: none; box-shadow: none; }
         .header-select option { color: #000; font-weight: normal; }
 
-        /* [✨] เพิ่ม Effect ตอนชี้เมาส์ที่ลิงก์ S/N */
         .sn-link {
             transition: 0.2s;
             text-decoration: none;
         }
         .sn-link:hover {
             text-decoration: underline;
-            color: #1d4ed8 !important; /* น้ำเงินเข้มขึ้นตอนชี้ */
+            color: #1d4ed8 !important;
         }
     </style>
 </head>
@@ -80,8 +74,7 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                     </tr>
                 </thead>
                 <tbody>
-                    
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
@@ -95,27 +88,55 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 
 <script>
     $(document).ready(function(){
+        // 1. สร้างตารางแบบดึงข้อมูลจาก Server-Side
         let table = $('#historyTable').DataTable({
-        "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
-        "processing": true,
-        "serverSide": true, // เปิดโหมด Server-Side
-        "ajax": {
-            "url": "api_history_ss.php", // ไฟล์ที่เราจะสร้างใหม่
-            "type": "POST",
-            "data": function(d) {
-                // ส่งค่าจากช่อง Dropdown ไปให้ Server กรองด้วย
-                d.filter_type = $('#filter_type').val();
-            }
-        },
-        "order": [[ 0, "desc" ]],
-        "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ]
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
+            "processing": true,
+            "serverSide": true, 
+            "ajax": {
+                "url": "api_history_ss.php", // ไฟล์ที่เราสร้างไว้ดึงข้อมูล
+                "type": "POST",
+                "data": function(d) {
+                    d.filter_type = $('#filter_type').val();
+                }
+            },
+            "order": [[ 0, "desc" ]], 
+            "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ] 
+        });
+
+        // 2. เมื่อเปลี่ยน Dropdown ให้ตารางโหลดใหม่
+        $('#filter_type').change(function(){
+            table.draw();
+        });
     });
 
-    // เมื่อเปลี่ยนประเภท (รับเข้า/เบิกออก) ให้ตารางโหลดข้อมูลใหม่ทันที
-    $('#filter_type').change(function(){
-        table.draw();
-    });
-    });
+    // 3. ฟังก์ชันแก้ไขหมายเหตุ
+    function editNote(id) {
+        // ดึงข้อความจากหน้าจอแบบ Real-time
+        let currentNote = $('#note_' + id).text().trim();
+
+        Swal.fire({
+            title: 'แก้ไขหมายเหตุ',
+            input: 'textarea',
+            inputAttributes: { 'style': 'height: 150px; font-size: 1rem;' },
+            inputValue: currentNote, 
+            showCancelButton: true,
+            confirmButtonText: 'บันทึก',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("api_update_history.php", { id: id, note: result.value }, function(res){
+                    if(res.trim() == 'success') {
+                        // อัปเดตข้อความบนจอทันที
+                        $('#note_' + id).text(result.value);
+                        Swal.fire({ icon: 'success', title: 'บันทึกแล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+                    } else {
+                        Swal.fire('Error', res, 'error');
+                    }
+                });
+            }
+        });
+    }
 </script>
 </body>
 </html>
