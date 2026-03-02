@@ -78,57 +78,55 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-hover mt-3 align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th width="15%">วัน/เวลา</th>
-                        <th width="12%" class="text-center">เหตุการณ์</th>
-                        <th width="40%">รายละเอียด / โครงการ</th>
-                        <th width="33%">หมายเหตุ (Note)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    if($result->num_rows > 0):
-                        while($row = $result->fetch_assoc()): 
-                            $badge = '';
-                            if($row['action_type'] == 'import') $badge = '<span class="badge bg-success rounded-pill px-3">รับเข้า</span>';
-                            if($row['action_type'] == 'export') $badge = '<span class="badge bg-danger rounded-pill px-3">เบิกออก</span>';
-                            if($row['action_type'] == 'return') $badge = '<span class="badge bg-warning text-dark rounded-pill px-3">รับคืน</span>';
+            <table class="table table-bordered mt-3 align-middle">
+        <thead class="table-light">
+            <tr>
+                <th width="15%">วัน/เวลา</th>
+                <th width="12%" class="text-center">เหตุการณ์</th>
+                <th width="18%">ผู้ทำรายการ</th> <th width="35%">รายละเอียด / โครงการ</th>
+                <th width="20%">หมายเหตุ (Note)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while($row = $result->fetch_assoc()): 
+                $badge = '';
+                if($row['action_type'] == 'import') $badge = '<span class="badge bg-success rounded-pill px-3">รับเข้า</span>';
+                if($row['action_type'] == 'export') $badge = '<span class="badge bg-danger rounded-pill px-3">เบิกออก</span>';
+                if($row['action_type'] == 'return') $badge = '<span class="badge bg-warning text-dark rounded-pill px-3">รับคืน</span>';
 
-                            $show_name = !empty($row['snapshot_name']) ? $row['snapshot_name'] : $row['current_name'];
-                            
-                            if(empty($show_name) && $row['project_id'] > 0) {
-                                $show_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
-                            } elseif(empty($show_name)) {
-                                $show_name = "-";
-                            }
-                    ?>
-                    <tr>
-                        <td class="small"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
-                        <td class="text-center"><?php echo $badge; ?></td>
-                        
-                        <td class="fw-bold text-dark">
-                            <?php echo ($show_name != "-") ? '<i class="fas fa-hard-hat me-2"></i> โครงการ: ' . $show_name : '<span class="text-muted"><i class="fas fa-warehouse me-1"></i> - คลังสินค้า -</span>'; ?>
-                        </td>
-                        
-                        <td>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span id="note_text_<?php echo $row['id']; ?>" class="text-muted fst-italic"><?php echo htmlspecialchars($row['note']); ?></span>
-                                <button class="btn btn-sm text-warning" onclick="editNote(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['note'], ENT_QUOTES); ?>')">
-                                    <i class="fas fa-pen"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php 
-                        endwhile; 
-                    else:
-                    ?>
-                        <tr><td colspan="4" class="text-center text-muted py-4">ไม่พบประวัติการทำรายการของ S/N นี้</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                // Logic: เลือกชื่อที่ถูกต้อง
+                $show_name = !empty($row['snapshot_name']) ? $row['snapshot_name'] : $row['current_name'];
+                
+                if(empty($show_name) && $row['project_id'] > 0) {
+                    $show_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
+                } elseif(empty($show_name)) {
+                    $show_name = "-";
+                }
+
+                // ✨ ดึงข้อมูลผู้ทำรายการ ถ้าไม่มีให้ใส่เครื่องหมาย -
+                $operator = !empty($row['operator']) ? '<i class="fas fa-user-circle text-secondary me-1"></i> ' . htmlspecialchars($row['operator']) : '-';
+            ?>
+            <tr>
+                <td class="small"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
+                <td class="text-center"><?php echo $badge; ?></td>
+                
+                <td><?php echo $operator; ?></td>
+                
+                <td class="fw-bold text-dark">
+                    <?php echo ($show_name != "-") ? '<i class="fas fa-hard-hat me-2 text-primary"></i> โครงการ: ' . $show_name : '<span class="text-muted"><i class="fas fa-warehouse me-1"></i> - คลังสินค้า -</span>'; ?>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span id="note_text_<?php echo $row['id']; ?>" class="text-muted fst-italic"><?php echo htmlspecialchars($row['note']); ?></span>
+                        <button class="btn btn-sm text-warning" onclick="editNote(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['note'], ENT_QUOTES); ?>')">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
         </div>
 
         <?php else: ?>

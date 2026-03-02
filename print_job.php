@@ -61,10 +61,11 @@ if ($doc_type == 'return') {
     $batch_filter = $selected_batch ? "AND DATE_FORMAT(h.action_date, '%Y-%m-%d %H:%i') = '$selected_batch'" : "";
     
     $sql = "SELECT h.serial_number, h.action_date, 
-                   p.name, p.unit, p.barcode 
+                   p.name, u.name AS unit, p.barcode 
             FROM product_history h
             LEFT JOIN product_serials s ON h.serial_number = s.serial_number
             LEFT JOIN products p ON s.product_barcode = p.barcode
+            LEFT JOIN units u ON p.unit_id = u.id
             WHERE h.project_id = $pid 
               AND h.action_type = 'return' 
               $batch_filter
@@ -74,9 +75,10 @@ if ($doc_type == 'return') {
     // --- QUERY รายการเบิก (จาก Serials ในโปรเจกต์) ---
     $batch_filter = $selected_batch ? "AND DATE_FORMAT(s.date_added, '%Y-%m-%d %H:%i') = '$selected_batch'" : "";
     
-    $sql = "SELECT s.*, p.name, p.unit, p.barcode 
+    $sql = "SELECT s.*, p.name, u.name AS unit, p.barcode 
             FROM product_serials s 
             JOIN products p ON s.product_barcode = p.barcode 
+            LEFT JOIN units u ON p.unit_id = u.id
             WHERE s.project_id = $pid 
               $batch_filter
             ORDER BY p.name ASC, s.serial_number ASC";
@@ -106,24 +108,46 @@ if($selected_batch) {
 }
 
 // ==========================================
-// [✨] Export Excel
+// [✨] Export Excel (อัปเดตใหม่ สมบูรณ์ 100%)
 // ==========================================
 if ($export_mode == 'excel') {
     $filename = $doc_prefix . "_" . $doc_number . "_" . date('Ymd') . ".xls";
     header("Content-Type: application/vnd.ms-excel");
     header("Content-Disposition: attachment; filename=\"$filename\"");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+
+    // ใส่ BOM ให้ Excel อ่านภาษาไทยได้ 100%
+    echo "\xEF\xBB\xBF"; 
+    
     echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
     echo '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>';
     
-    echo "<table border='0'>";
+    // ตั้งค่าชื่อลายเซ็น
+    $sig1 = ($doc_type == 'return') ? "( ผู้รับคืนสินค้า )" : "( ผู้อนุมัติ )";
+    $sig2 = ($doc_type == 'return') ? "( ผู้คืนสินค้า )" : "( ผู้เบิกสินค้า )";
+    $sig3 = ($doc_type == 'return') ? "( ผู้อนุมัติ )" : "( ผู้จ่ายสินค้า )";
+
+    // 1. ตารางส่วนหัวเอกสาร
+    echo "<table border='0' style='width: 100%;'>";
     echo "<tr><td colspan='5' style='font-size:20px; font-weight:bold; text-align:center;'>$default_title</td></tr>";
     echo "<tr><td colspan='5' style='text-align:center;'>บริษัท ซี.เอ็ม.เอส. คอนโทรล ซิสเต็ม จำกัด</td></tr>";
     echo "<tr><td colspan='5'>&nbsp;</td></tr>";
-    echo "<tr><td colspan='3'><strong>ชื่อโครงการ:</strong> " . $proj['project_name'] . "</td><td colspan='2'><strong>เลขที่เอกสาร:</strong> $doc_number</td></tr>";
-    echo "<tr><td colspan='3'><strong>รายละเอียด:</strong> $default_detail_text</td><td colspan='2'><strong>วันที่:</strong> $print_date</td></tr>";
+    echo "<tr>";
+    echo "<td colspan='3'><strong>ชื่อโครงการ:</strong> " . $proj['project_name'] . "</td>";
+    echo "<td colspan='2'><strong>เลขที่เอกสาร:</strong> $doc_number</td>";
+    echo "</tr>";
+    echo "<tr>";
+    echo "<td colspan='3'><strong>รหัสโครงการ:</strong> " . $proj['project_code'] . "</td>";
+    echo "<td colspan='2'><strong>วันที่:</strong> $print_date</td>";
+    echo "</tr>";
+    echo "<tr>";
+    echo "<td colspan='5'><strong>รายละเอียด:</strong> $default_detail_text</td>";
+    echo "</tr>";
     echo "</table><br>";
 
-    echo "<table border='1' cellspacing='0' cellpadding='5'>";
+    // 2. ตารางรายการสินค้า
+    echo "<table border='1' cellspacing='0' cellpadding='5' style='width: 100%;'>";
     if ($view_mode == 'detail') {
         echo "<tr style='background-color:#eee;'><th>ลำดับ</th><th>รายการสินค้า</th><th>Serial Number</th><th>หน่วย</th><th>หมายเหตุ</th></tr>";
         $i = 0;
@@ -140,7 +164,17 @@ if ($export_mode == 'excel') {
         }
         echo "<tr><td colspan='2' align='right'><strong>รวมทั้งหมด</strong></td><td align='center'><strong>".number_format($total)."</strong></td><td align='center'>รายการ</td><td></td></tr>";
     }
+    echo "</table><br><br>";
+
+    // 3. ตารางช่องลายเซ็น
+    echo "<table border='0' style='width: 100%; text-align: center; margin-top: 40px;'>";
+    echo "<tr>";
+    echo "<td style='width: 33%; padding-top: 30px;'><br>_______________________<br><br>$sig1<br><br>วันที่ ____/____/____</td>";
+    echo "<td style='width: 33%; padding-top: 30px;'><br>_______________________<br><br>$sig2<br><br>วันที่ ____/____/____</td>";
+    echo "<td style='width: 33%; padding-top: 30px;'><br>_______________________<br><br>$sig3<br><br>วันที่ ____/____/____</td>";
+    echo "</tr>";
     echo "</table>";
+
     echo "</body></html>";
     exit;
 }

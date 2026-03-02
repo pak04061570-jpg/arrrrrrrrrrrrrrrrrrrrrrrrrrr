@@ -123,7 +123,7 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                         $operator = $row['operator'] ? '<i class="fas fa-user-circle text-secondary me-1"></i> '.$row['operator'] : '-';
                     ?>
                     <tr>
-                        <td class="small"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
+                        <td class="small" data-order="<?php echo $row['action_date']; ?>"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
                         <td class="text-center"><?php echo $badge; ?></td>
                         <td><?php echo $operator; ?></td>
                         
