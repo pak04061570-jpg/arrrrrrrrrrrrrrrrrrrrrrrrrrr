@@ -66,11 +66,11 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                     <tr>
                         <th width="12%">วัน/เวลา</th>
                         <th width="10%" class="text-center p-0 align-middle">
-                            <select class="form-select form-select-sm header-select" onchange="location.href='?type='+this.value">
-                                <option value="" <?php echo $filter_type == '' ? 'selected' : ''; ?>>ทุกประเภท</option>
-                                <option value="import" <?php echo $filter_type == 'import' ? 'selected' : ''; ?>>รับเข้า</option>
-                                <option value="export" <?php echo $filter_type == 'export' ? 'selected' : ''; ?>>เบิกออก</option>
-                                <option value="return" <?php echo $filter_type == 'return' ? 'selected' : ''; ?>>รับคืน</option>
+                            <select id="filter_type" class="form-select form-select-sm header-select">
+                                <option value="">ทุกประเภท</option>
+                                <option value="import">รับเข้า</option>
+                                <option value="export">เบิกออก</option>
+                                <option value="return">รับคืน</option>
                             </select>
                         </th>
                         <th width="12%">ผู้ทำรายการ</th>
@@ -80,77 +80,7 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
-                    $sql = "SELECT h.*, 
-                                   h.project_name AS snapshot_name, 
-                                   p.project_name AS current_name,
-                                   pr.name as product_name 
-                            FROM product_history h 
-                            LEFT JOIN projects p ON h.project_id = p.id 
-                            LEFT JOIN product_serials ps ON h.serial_number = ps.serial_number
-                            LEFT JOIN products pr ON ps.product_barcode = pr.barcode";
                     
-                    if($filter_type != '') {
-                        $sql .= " WHERE h.action_type = '$filter_type'";
-                    }
-
-                    $sql .= " ORDER BY h.id DESC"; 
-                    
-                    $result = $conn->query($sql);
-                    
-                    while($row = $result->fetch_assoc()): 
-                        $badge = '';
-                        if($row['action_type'] == 'import') $badge = '<span class="badge bg-success rounded-pill px-3">รับเข้า</span>';
-                        elseif($row['action_type'] == 'export') $badge = '<span class="badge bg-danger rounded-pill px-3">เบิกออก</span>';
-                        elseif($row['action_type'] == 'return') $badge = '<span class="badge bg-warning text-dark rounded-pill px-3">รับคืน</span>';
-                        
-                        $pro_name = $row['product_name'] ? $row['product_name'] : '<span class="text-muted small">- ไม่พบชื่อสินค้า -</span>';
-                        
-                        $display_project_name = !empty($row['snapshot_name']) ? $row['snapshot_name'] : $row['current_name'];
-
-                        if (empty($display_project_name) && !empty($row['project_id'])) {
-                            $display_project_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
-                        }
-                        
-                        // จัดการการแสดงผล "ที่อยู่ (โปรเจกต์)"
-                        $project_info = '-'; // ค่าเริ่มต้น
-                        if($row['action_type'] == 'import' || $row['action_type'] == 'return') {
-                             $project_info = '<div class="small text-muted fst-italic"><i class="fas fa-warehouse text-secondary me-1"></i>คลังสินค้า</div>';
-                        } elseif ($display_project_name) {
-                             $project_info = '<div class="small fw-bold"><i class="fas fa-hard-hat me-2"></i>'.$display_project_name.'</div>';
-                        }
-
-                        $operator = $row['operator'] ? '<i class="fas fa-user-circle text-secondary me-1"></i> '.$row['operator'] : '-';
-                    ?>
-                    <tr>
-                        <td class="small" data-order="<?php echo $row['action_date']; ?>"><?php echo date('d/m/Y H:i', strtotime($row['action_date'])); ?></td>
-                        <td class="text-center"><?php echo $badge; ?></td>
-                        <td><?php echo $operator; ?></td>
-                        
-                        <td class="fw-bold">
-                            <a href="history_view.php?sn=<?php echo urlencode($row['serial_number']); ?>" class="text-primary sn-link">
-                                 <i class="fas fa-search small me-1"></i><?php echo htmlspecialchars($row['serial_number']); ?>
-                            </a>
-                        </td>
-                        
-                        <td>
-                            <div class="fw-bold text-dark"><?php echo $pro_name; ?></div>
-                        </td>
-
-                        <td>
-                            <?php echo $project_info; ?>
-                        </td>
-
-                        <td>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div style="max-width: 200px;" class="text-truncate text-muted small fst-italic" title="<?php echo htmlspecialchars($row['note']); ?>">
-                                    <span id="note_<?php echo $row['id']; ?>"><?php echo $row['note']; ?></span>
-                                </div>
-                                <i class="fas fa-pen btn-edit-note ms-2" style="flex-shrink: 0;" onclick="editNote(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['note'], ENT_QUOTES); ?>')"></i>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
@@ -165,35 +95,27 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 
 <script>
     $(document).ready(function(){
-        $('#historyTable').DataTable({
-            "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
-            "order": [[ 0, "desc" ]], 
-            "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ] 
-        });
+        let table = $('#historyTable').DataTable({
+        "language": { "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json" },
+        "processing": true,
+        "serverSide": true, // เปิดโหมด Server-Side
+        "ajax": {
+            "url": "api_history_ss.php", // ไฟล์ที่เราจะสร้างใหม่
+            "type": "POST",
+            "data": function(d) {
+                // ส่งค่าจากช่อง Dropdown ไปให้ Server กรองด้วย
+                d.filter_type = $('#filter_type').val();
+            }
+        },
+        "order": [[ 0, "desc" ]],
+        "columnDefs": [ { "orderable": false, "targets": [1, 2, 3, 4, 5, 6] } ]
     });
 
-    function editNote(id, oldNote) {
-        Swal.fire({
-            title: 'แก้ไขหมายเหตุ',
-            input: 'textarea',
-            inputAttributes: { 'style': 'height: 150px; font-size: 1rem;' },
-            inputValue: oldNote,
-            showCancelButton: true,
-            confirmButtonText: 'บันทึก',
-            cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.post("api_update_history.php", { id: id, note: result.value }, function(res){
-                    if(res.trim() == 'success') {
-                        $('#note_' + id).text(result.value);
-                        Swal.fire({ icon: 'success', title: 'บันทึกแล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-                    } else {
-                        Swal.fire('Error', res, 'error');
-                    }
-                });
-            }
-        });
-    }
+    // เมื่อเปลี่ยนประเภท (รับเข้า/เบิกออก) ให้ตารางโหลดข้อมูลใหม่ทันที
+    $('#filter_type').change(function(){
+        table.draw();
+    });
+    });
 </script>
 </body>
 </html>
