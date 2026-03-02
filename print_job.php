@@ -5,13 +5,13 @@ $pid = isset($_GET['id']) ? $_GET['id'] : 0;
 $selected_batch = isset($_GET['batch']) ? $_GET['batch'] : '';
 $export_mode = isset($_GET['export']) ? $_GET['export'] : ''; 
 $view_mode = isset($_GET['mode']) ? $_GET['mode'] : 'summary';
-$doc_type = isset($_GET['type']) ? $_GET['type'] : 'withdraw'; // withdraw = เบิก, return = คืน
+$doc_type = isset($_GET['type']) ? $_GET['type'] : 'withdraw';
 
 $proj = $conn->query("SELECT * FROM projects WHERE id = $pid")->fetch_assoc();
 if(!$proj) die("ไม่พบข้อมูลโปรเจกต์");
 
 // ==========================================
-// 1. กำหนดค่าตามประเภทเอกสาร (Logic แยกเบิก/คืน)
+// กำหนดค่าตามประเภทเอกสาร (Logic แยกเบิก/คืน)
 // ==========================================
 $batch_map = [];
 $doc_prefix = ($doc_type == 'return') ? "RTN" : "JOB"; // RTN = Return, JOB = Withdrawal

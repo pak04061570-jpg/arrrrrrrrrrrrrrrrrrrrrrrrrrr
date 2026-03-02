@@ -72,18 +72,19 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
 </thead>
 <tbody>
    <?php 
-// 1. แก้ SQL
-$sql = "SELECT p.*, t.name AS type_name, s.name AS supplier_name 
+
+//SQL
+$sql = "SELECT p.*, t.name AS type_name, s.name AS supplier_name, u.name AS unit_name
         FROM products p 
         LEFT JOIN product_types t ON p.type_id = t.id 
-        LEFT JOIN suppliers s ON p.supplier_id = s.id 
+        LEFT JOIN suppliers s ON p.supplier_id = s.id
+        LEFT JOIN units u ON p.unit_id = u.id
         ORDER BY p.quantity ASC";
 
 $result = $conn->query($sql);
 
 while($row = $result->fetch_assoc()):
     $total_val = $row['price_sell'] * $row['quantity'];
-    // ... (ส่วนเช็คสถานะสินค้าคงเหลือ เอาไว้เหมือนเดิม) ...
     if($row['quantity'] == 0) $status = '<span class="badge bg-danger-subtle text-danger border border-danger">สินค้าหมด</span>';
     elseif($row['quantity'] < 5) $status = '<span class="badge bg-warning-subtle text-warning border border-warning">ใกล้หมด</span>';
     else $status = '<span class="badge bg-success-subtle text-success border border-success">ปกติ</span>';
@@ -92,7 +93,7 @@ while($row = $result->fetch_assoc()):
     <td><span class="badge bg-light text-dark border"><?php echo $row['barcode']; ?></span></td>
         <td>
             <div class="fw-bold"><?php echo $row['name']; ?></div>
-            <small class="text-muted">หน่วย: <?php echo $row['unit']; ?></small>
+            <small class="text-muted">หน่วย: <?php echo $row['unit_name']; ?></small>
         </td>
         <td>
                 

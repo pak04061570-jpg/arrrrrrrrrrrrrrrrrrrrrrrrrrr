@@ -1,15 +1,14 @@
 <?php
 include 'db_connect.php';
 
-// SQL ใหม่: เพิ่ม LEFT JOIN units
 $sql = "SELECT p.*, 
                t.name AS type_name, 
                s.name AS supplier_name,
-               u.name AS unit_name     /* เพิ่ม */
+               u.name AS unit_name    
         FROM products p 
         LEFT JOIN product_types t ON p.type_id = t.id 
         LEFT JOIN suppliers s ON p.supplier_id = s.id 
-        LEFT JOIN units u ON p.unit_id = u.id /* JOIN ตารางหน่วย */
+        LEFT JOIN units u ON p.unit_id = u.id
         ORDER BY p.last_updated DESC";
 
 $result = $conn->query($sql);
