@@ -9,8 +9,9 @@ if (empty($data['items'])) {
     exit;
 }
 
-$operator = $data['operator'];
-$note = $data['note'];
+// [✨] ดึงชื่อผู้ทำรายการจาก Session อัตโนมัติ
+$operator = isset($_SESSION['name']) ? $_SESSION['name'] : 'Unknown';
+$note = $conn->real_escape_string($data['note']);
 $items = $data['items'];
 
 $success_count = 0;
@@ -18,21 +19,14 @@ $errors = [];
 
 foreach ($items as $sn) {
     $check = $conn->query("SELECT * FROM product_serials WHERE serial_number = '$sn'");
-    if($check->num_rows == 0) {
-        $errors[] = "$sn: ไม่พบ S/N";
-        continue;
-    }
+    if($check->num_rows == 0) { $errors[] = "$sn: ไม่พบ S/N"; continue; }
     $item = $check->fetch_assoc();
 
-    if($item['status'] == 'available') {
-        $errors[] = "$sn: สถานะว่างอยู่แล้ว";
-        continue;
-    }
+    if($item['status'] == 'available') { $errors[] = "$sn: สถานะว่างอยู่แล้ว"; continue; }
     
     $project_id = $item['project_id'];
     $barcode = $item['product_barcode'];
 
-    // [✨] ดึงชื่อโปรเจกต์ไว้ก่อน (Snapshot Name)
     $proj_q = $conn->query("SELECT project_name FROM projects WHERE id = '$project_id'");
     $project_name = ($proj_q && $proj_q->num_rows > 0) ? $proj_q->fetch_assoc()['project_name'] : '';
 
@@ -41,7 +35,7 @@ foreach ($items as $sn) {
     if($conn->query($sql)) {
         $conn->query("UPDATE products SET quantity = quantity + 1 WHERE barcode = '$barcode'");
         
-        // [✨] บันทึกประวัติ พร้อมชื่อโปรเจกต์
+        // บันทึกประวัติพร้อมชื่อคนที่ล็อกอิน
         $stmt = $conn->prepare("INSERT INTO product_history (serial_number, project_id, project_name, action_type, note, operator) VALUES (?, ?, ?, 'return', ?, ?)");
         $stmt->bind_param("sisss", $sn, $project_id, $project_name, $note, $operator);
         
@@ -50,7 +44,6 @@ foreach ($items as $sn) {
              $stmt_old->bind_param("siss", $sn, $project_id, $note, $operator);
              $stmt_old->execute();
         }
-        
         $success_count++;
     } else {
         $errors[] = "$sn: เกิดข้อผิดพลาด";

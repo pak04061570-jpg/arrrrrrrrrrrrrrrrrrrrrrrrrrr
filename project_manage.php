@@ -1,11 +1,16 @@
 <?php 
-include 'db_connect.php'; 
+include 'db_connect.php';
 
 $pid = isset($_GET['id']) ? $_GET['id'] : 0;
+
+// ดึงข้อมูลโปรเจกต์
 $proj = $conn->query("SELECT * FROM projects WHERE id = $pid")->fetch_assoc();
 if(!$proj) die("ไม่พบข้อมูลโปรเจกต์");
 
 $is_closed = ($proj['status'] == 'Closed');
+
+// [✨] ดึงรายชื่อผู้เบิกสินค้า
+$withdrawers = $conn->query("SELECT * FROM withdrawers ORDER BY name ASC");
 ?>
 
 <!DOCTYPE html>
@@ -34,21 +39,9 @@ $is_closed = ($proj['status'] == 'Closed');
         .closed-job { opacity: 0.8; background-color: #f8f9fa; }
         .closed-job .btn-action, .closed-job .form-check-input { display: none !important; }
         
-        /* ซ่อนคอลัมน์เลือกไว้ก่อน */
         .select-col { display: none; }
-        
-        /* Checkbox ขนาดใหญ่ */
-        .form-check-input.big-checkbox {
-            width: 1.4em;
-            height: 1.4em;
-            margin-top: 0.2em;
-            border: 2px solid #94a3b8; 
-            cursor: pointer;
-        }
-        .form-check-input.big-checkbox:checked {
-            background-color: #dc3545; /* สีแดงตอนติ๊ก */
-            border-color: #dc3545;
-        }
+        .form-check-input.big-checkbox { width: 1.4em; height: 1.4em; margin-top: 0.2em; border: 2px solid #94a3b8; cursor: pointer; }
+        .form-check-input.big-checkbox:checked { background-color: #dc3545; border-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -115,17 +108,21 @@ $is_closed = ($proj['status'] == 'Closed');
                                 <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="ยิง S/N ที่นี่ (กด Enter เพื่อเพิ่ม)" autofocus autocomplete="off">
                                 <button class="btn btn-primary" onclick="addToQueue()"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
                             </div>
-                            <div class="form-text text-muted"></div>
+                            <div class="form-text text-muted mb-4"></div>
+
+                            <div class="text-start mt-3 pt-3 border-top">
+                                <span class="text-muted me-2">วิธีที่ 2: เลือกจากรายการที่มี</span>
+                                <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#browseModal">
+                                    <i class="fas fa-search me-1"></i> ค้นหาและเลือกสินค้า 
+                                </button>
+                            </div>
                         </div>
 
                         <div class="col-md-6 ps-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold text-secondary m-0">รายการรอเบิก (Waiting List)</h6>
-                                <button id="btnConfirm" class="btn btn-success btn-sm fw-bold px-3" onclick="confirmWithdrawBatch()" disabled>
-                                    <i class="fas fa-check-circle me-1"></i> ยืนยันเบิกทั้งหมด (<span id="qCount">0</span>)
-                                </button>
                             </div>
-                            <div class="border rounded p-0" style="height: 200px; overflow-y: auto; background: #f8f9fa;">
+                            <div class="border rounded p-0 mb-3" style="height: 180px; overflow-y: auto; background: #f8f9fa;">
                                 <table class="table table-sm table-striped mb-0">
                                     <thead class="table-light sticky-top">
                                         <tr>
@@ -136,16 +133,24 @@ $is_closed = ($proj['status'] == 'Closed');
                                     </thead>
                                     <tbody id="queueBody"></tbody>
                                 </table>
-                                <div id="emptyMsg" class="text-center text-muted mt-5 small">ยังไม่มีรายการ<br>กรุณาสแกน S/N ทางซ้ายมือ</div>
+                                <div id="emptyMsg" class="text-center text-muted mt-4 small">ยังไม่มีรายการ<br>กรุณาสแกน S/N ทางซ้ายมือ</div>
                             </div>
+
+                            <div class="bg-light p-3 rounded border shadow-sm">
+                                <label class="fw-bold small mb-2 text-primary"><i class="fas fa-user-hard-hat me-1"></i> ระบุชื่อผู้เบิกสินค้า:</label>
+                                <select id="withdrawer_name" class="form-select mb-3">
+                                    <option value="">-- เลือกช่าง / ผู้เบิกสินค้า --</option>
+                                    <?php while($w = $withdrawers->fetch_assoc()): ?>
+                                        <option value="<?php echo htmlspecialchars($w['name']); ?>"><?php echo htmlspecialchars($w['name']); ?></option>
+                                    <?php endwhile; ?>
+                                </select>
+
+                                <button id="btnConfirm" class="btn btn-success w-100 fw-bold shadow-sm" onclick="confirmWithdrawBatch()" disabled>
+                                    <i class="fas fa-check-circle me-1"></i> ยืนยันเบิกทั้งหมด (<span id="qCount">0</span>)
+                                </button>
+                            </div>
+
                         </div>
-                    </div>
-                    
-                    <div class="text-start mt-3 pt-3 border-top">
-                        <span class="text-muted me-2">หรือเลือกจากรายการที่มี:</span>
-                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#browseModal">
-                            <i class="fas fa-search me-1"></i> ค้นหาและเลือกสินค้า (เลือกได้หลายรายการ)
-                        </button>
                     </div>
                 </div>
             </div>
@@ -206,7 +211,6 @@ $is_closed = ($proj['status'] == 'Closed');
                             <?php endif; ?>
 
                             <td class="ps-4 text-center text-muted"><?php echo $i; ?></td>
-
                             <td class="<?php echo $is_closed ? 'ps-4 fw-bold' : 'fw-bold'; ?>"><?php echo htmlspecialchars($item['name']); ?></td>
                             <td><span class="badge bg-light text-dark border px-3 py-2 fs-6"><?php echo $item['serial_number']; ?></span></td>
                             <td class="text-center text-muted small"><?php echo date('d/m/Y H:i', strtotime($item['date_added'])); ?></td>
@@ -293,25 +297,22 @@ $is_closed = ($proj['status'] == 'Closed');
     let pid = <?php echo $pid; ?>;
     let pendingList = []; 
 
-    // ฟังก์ชันเปิด/ปิดโหมดคืนสินค้า
+    // --- ส่วนจัดการ Checkbox คืนของ ---
     let returnMode = false;
     function toggleReturnMode() {
         returnMode = !returnMode;
         if(returnMode) {
-            $('.select-col').fadeIn(); // โชว์ช่องติ๊ก
+            $('.select-col').fadeIn(); 
             $('#btnToggleReturn').removeClass('btn-danger').addClass('btn-secondary').html('<i class="fas fa-times me-1"></i> ยกเลิก');
         } else {
-            $('.select-col').hide(); // ซ่อนช่องติ๊ก
+            $('.select-col').hide(); 
             $('#btnToggleReturn').removeClass('btn-secondary').addClass('btn-danger').html('<i class="fas fa-undo me-1"></i> โหมดคืนสินค้า');
-            
-            // รีเซ็ตการเลือก
             $('.item-check').prop('checked', false);
             $('#checkAll').prop('checked', false);
             updateSelectCount();
         }
     }
 
-    // --- ส่วนจัดการ Checkbox คืนของ ---
     function toggleAllChecks() {
         let isChecked = $('#checkAll').prop('checked');
         $('.item-check').prop('checked', isChecked);
@@ -326,65 +327,43 @@ $is_closed = ($proj['status'] == 'Closed');
         } else {
             $('#btnReturnSelected').fadeOut();
         }
-        
         let all = $('.item-check').length;
         $('#checkAll').prop('checked', count == all && all > 0);
     }
 
-    // ฟังก์ชันคืนหลายรายการ (Batch Return)
     function returnSelected() {
         let selectedSNs = [];
-        $('.item-check:checked').each(function() {
-            selectedSNs.push($(this).val());
-        });
-
+        $('.item-check:checked').each(function() { selectedSNs.push($(this).val()); });
         if(selectedSNs.length == 0) return;
 
         Swal.fire({
             title: 'คืนสินค้า ' + selectedSNs.length + ' รายการ?',
-            html: 
-                '<input id="swal_return_name" class="swal2-input" placeholder="ชื่อผู้คืนของ">' +
-                '<input id="swal_return_note" class="swal2-input" placeholder="หมายเหตุ (เช่น เหลือใช้, คืนยกชุด)">',
+            html: '<input id="swal_return_note" class="swal2-input" placeholder="ระบุหมายเหตุ (ถ้ามี) เช่น คืนยกชุด, ของเหลือ">',
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'ยืนยันคืน',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'ยืนยันคืนเข้าคลัง',
             cancelButtonText: 'ยกเลิก',
-            preConfirm: () => {
-                return [
-                    document.getElementById('swal_return_name').value,
-                    document.getElementById('swal_return_note').value
-                ]
-            }
+            preConfirm: () => { return document.getElementById('swal_return_note').value; }
         }).then((result) => {
             if (result.isConfirmed) {
-                let name = result.value[0]; 
-                let note = result.value[1]; 
-                
-                if(!name) { Swal.fire('แจ้งเตือน', 'กรุณาระบุชื่อผู้คืนสินค้า', 'warning'); return; }
-
+                let note = result.value; 
                 fetch('api_return_batch.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        items: selectedSNs,
-                        operator: name,
-                        note: note
-                    })
+                    body: JSON.stringify({ items: selectedSNs, note: note }) 
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if(data.status == 'success') {
-                        Swal.fire('สำเร็จ', data.msg, 'success').then(() => location.reload());
-                    } else if(data.status == 'partial_error') {
-                        Swal.fire('มีข้อผิดพลาดบางรายการ', data.errors.join('<br>'), 'warning').then(() => location.reload());
-                    } else {
-                        Swal.fire('Error', data.msg, 'error');
-                    }
+                    if(data.status == 'success') { Swal.fire('สำเร็จ', data.msg, 'success').then(() => location.reload()); } 
+                    else if(data.status == 'partial_error') { Swal.fire('มีข้อผิดพลาดบางรายการ', data.errors.join('<br>'), 'warning').then(() => location.reload()); } 
+                    else { Swal.fire('Error', data.msg, 'error'); }
                 });
             }
         });
     }
 
-    // --- ส่วนเดิม (การเบิกของ) ---
+    // --- ส่วนการเบิกของ (รอเบิก) ---
     $('#filterInput').on('keyup', function() {
         let val = $(this).val().toLowerCase();
         $('.search-item').filter(function() {
@@ -427,7 +406,6 @@ $is_closed = ($proj['status'] == 'Closed');
 
     function addToQueue() {
         let sn = $('#scanInput').val().trim();
-        
         if(sn == "") return;
 
         let exists = pendingList.some(item => item.sn === sn);
@@ -477,40 +455,34 @@ $is_closed = ($proj['status'] == 'Closed');
         $('#scanInput').focus();
     }
 
-    // ฟังก์ชันยืนยันเบิกพร้อมถามชื่อ
+    // [✨] ฟังก์ชันยืนยันเบิก (ส่งชื่อผู้เบิกไปด้วย)
     function confirmWithdrawBatch() {
         if(pendingList.length == 0) return;
 
+        let withdrawer = $('#withdrawer_name').val();
+        if(!withdrawer) {
+            Swal.fire('แจ้งเตือน', 'กรุณาระบุ "ผู้เบิกสินค้า" ก่อนกดยืนยันครับ!', 'warning');
+            return;
+        }
+
         Swal.fire({
             title: 'ยืนยันการเบิกสินค้า',
-            html: `รายการทั้งหมด ${pendingList.length} รายการ<br><br>
-                   <input type="text" id="swal_picker" class="swal2-input" placeholder="ระบุชื่อผู้เบิก (เช่น ช่างเอ)">`,
+            text: `คุณกำลังเบิกของให้ "${withdrawer}" จำนวน ${pendingList.length} รายการ ใช่หรือไม่?`,
+            icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'ยืนยันเบิก',
             cancelButtonText: 'ยกเลิก',
-            preConfirm: () => {
-                const picker = Swal.getPopup().querySelector('#swal_picker').value
-                if (!picker) {
-                    Swal.showValidationMessage('กรุณาระบุชื่อผู้เบิก')
-                }
-                return { picker: picker }
-            }
+            confirmButtonColor: '#10b981'
         }).then((result) => {
             if (result.isConfirmed) {
-                const operator = result.value.picker;
-                
                 $('#btnConfirm').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...');
 
-                // เติมชื่อผู้เบิกลงไปในรายการทั้งหมด
-                const itemsToSend = pendingList.map(item => ({
-                    sn: item.sn,
-                    operator: operator
-                }));
+                const itemsToSend = pendingList.map(item => ({ sn: item.sn }));
 
                 fetch('api_move_batch.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ project_id: pid, items: itemsToSend })
+                    body: JSON.stringify({ project_id: pid, items: itemsToSend, withdrawer: withdrawer })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -531,11 +503,10 @@ $is_closed = ($proj['status'] == 'Closed');
         });
     }
     
-    // [✨ แก้ไขแล้ว] ฟังก์ชันแก้ไขข้อมูลโครงการ
+    // --- ส่วนแก้ไข/ปิดโปรเจกต์ ---
     async function editProjectInfo() {
         const { value: formValues } = await Swal.fire({
             title: 'แก้ไขข้อมูลโครงงาน',
-            // ใช้ Backticks (`) เพื่อให้ใส่ HTML ได้ง่าย และเลี่ยงปัญหา Quote ชนกัน
             html: `
                 <div class="text-start mb-2"><label class="fw-bold">รหัสโครงการ</label></div>
                 <input id="swal-input1" class="swal2-input mb-3 w-100 m-0" placeholder="เช่น JOB-2024-A01" value="<?php echo htmlspecialchars($proj['project_code']); ?>">
@@ -560,11 +531,9 @@ $is_closed = ($proj['status'] == 'Closed');
             if(!newCode || !newName) { Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning'); return; }
             
             $.post("api_project.php", { action: 'edit_info', id: pid, code: newCode, name: newName }, function(res) {
-                // เช็คว่าสำเร็จหรือไม่ (ถ้า api_project.php echo success)
                 if(res.trim() === 'success') {
                     Swal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย', 'success').then(() => { location.reload(); });
                 } else {
-                    // ถ้า api ส่ง error กลับมา
                     Swal.fire('Error', 'เกิดข้อผิดพลาด: ' + res, 'error');
                 }
             });
@@ -585,14 +554,11 @@ $is_closed = ($proj['status'] == 'Closed');
             }
         })
     }
-    // [✨] ฟังก์ชันกด Esc เพื่อย้อนกลับ (project_manage.php)
+
     document.addEventListener('keydown', function(event) {
         if (event.key === "Escape") {
-            // เช็คว่ามี Bootstrap Modal (หน้าต่างเลือกสินค้า) หรือ SweetAlert เปิดอยู่หรือไม่
             let isModalOpen = document.body.classList.contains('modal-open');
             let isSwalOpen = document.body.classList.contains('swal2-shown');
-            
-            // ถ้าไม่มี Popup เปิดอยู่ ให้เด้งกลับไปหน้า projects.php
             if (!isModalOpen && !isSwalOpen) {
                 window.location.href = 'projects.php';
             }

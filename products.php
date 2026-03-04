@@ -58,18 +58,26 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
             </div>
             
             <table id="allProductTable" class="table table-hover table-custom w-100">
-<thead>
+ <thead>
     <tr>
-        <th>SKU / รหัส</th>
-        <th>ชื่อสินค้า</th>
-        <th>ประเภท</th>      
-        <th>Supplier</th>   <th class="text-end">ราคาขาย</th>
-        <th class="text-center">คงเหลือ</th>
+    <th>SKU / รหัส</th>
+    <th>ชื่อสินค้า</th>
+    <th>ประเภท</th>      
+    <th>Supplier</th>   
+    <?php if($_SESSION['role'] == 'admin'): ?>
+        <th class="text-end">ราคาขาย</th>
+    <?php endif; ?>
+    <th class="text-center">คงเหลือ</th>
+    <?php if($_SESSION['role'] == 'admin'): ?>
         <th class="text-end">มูลค่ารวม</th>
         <th class="text-center">สถานะ</th>
         <th class="text-center" width="15%">จัดการ</th>
+    <?php else: ?>
+        <th class="text-center">สถานะ</th>
+        <th class="text-center">ดูรายละเอียด</th>
+    <?php endif; ?>
     </tr>
-</thead>
+ </thead>
 <tbody>
    <?php 
 
@@ -91,40 +99,34 @@ while($row = $result->fetch_assoc()):
 ?>
 <tr>
     <td><span class="badge bg-light text-dark border"><?php echo $row['barcode']; ?></span></td>
-        <td>
-            <div class="fw-bold"><?php echo $row['name']; ?></div>
-            <small class="text-muted">หน่วย: <?php echo $row['unit_name']; ?></small>
-        </td>
-        <td>
-                
-        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
-                    <?php echo $row['type_name']; ?>
-                </span>
-            </td>
-        <td>
-                <small class="text-secondary">
-                    <i class="fas fa-store me-1"></i><?php echo $row['supplier_name']; ?>
-                </small>
-            </td>
-        
+    <td>
+        <div class="fw-bold"><?php echo $row['name']; ?></div>
+        <small class="text-muted">หน่วย: <?php echo $row['unit_name']; ?></small>
+    </td>
+    <td><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle"><?php echo $row['type_name']; ?></span></td>
+    <td><small class="text-secondary"><i class="fas fa-store me-1"></i><?php echo $row['supplier_name']; ?></small></td>
+    
+    <?php if($_SESSION['role'] == 'admin'): ?>
         <td class="text-end"><?php echo number_format($row['price_sell'], 2); ?></td>
-        <td class="text-center"><span class="fw-bold fs-5"><?php echo $row['quantity']; ?></span></td>
+    <?php endif; ?>
+    
+    <td class="text-center"><span class="fw-bold fs-5"><?php echo $row['quantity']; ?></span></td>
+    
+    <?php if($_SESSION['role'] == 'admin'): ?>
         <td class="text-end text-muted small"><?php echo number_format($total_val, 2); ?></td>
         <td class="text-center"><?php echo $status; ?></td>
-        
         <td class="text-center">
-             <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" 
-               class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1">
-                <i class="fas fa-eye me-1"></i> ดู/แก้ไข
-            </a>
-            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" 
-                    onclick="deleteProduct(<?php echo $row['id']; ?>, '<?php echo $row['name']; ?>')">
-                <i class="fas fa-trash-alt me-1"></i> ลบ
-            </button>
+             <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1"><i class="fas fa-eye"></i> ดู/แก้ไข</a>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteProduct(<?php echo $row['id']; ?>, '<?php echo $row['name']; ?>')"><i class="fas fa-trash-alt"></i> ลบ</button>
         </td>
-    </tr>
-    <?php endwhile; ?>
-    
+    <?php else: ?>
+        <td class="text-center"><?php echo $status; ?></td>
+        <td class="text-center">
+            <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="fas fa-eye"></i> ดูรายละเอียด</a>
+        </td>
+    <?php endif; ?>
+</tr>
+<?php endwhile; ?>    
 </tbody>
             </table>
         </div>

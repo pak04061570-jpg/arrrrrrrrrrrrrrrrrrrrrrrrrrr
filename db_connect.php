@@ -1,4 +1,8 @@
 <?php
+// เช็คก่อนว่ามี Session ทำงานอยู่หรือยัง ถ้ายังไม่มีค่อย start
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $servername = "localhost";
 $username = "root";
 $password = "123456"; // <--- ลองแก้ตรงนี้เป็นรหัสของคุณ (ถ้าจำไม่ได้ลอง "root" หรือลบให้ว่าง)

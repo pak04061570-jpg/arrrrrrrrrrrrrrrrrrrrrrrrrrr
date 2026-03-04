@@ -49,7 +49,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0 text-secondary"><i class="fas fa-hard-hat me-2"></i>รายการโครงการ (Projects)</h4>
         <button class="btn btn-primary rounded-pill px-4" onclick="createProject()">
-            <i class="fas fa-plus me-2"></i> เปิดไซต์งานใหม่
+            <i class="fas fa-plus me-2"></i> เปิดโครงการใหม่
         </button>
     </div>
 
@@ -99,9 +99,9 @@
 <script>
     async function createProject() {
         const { value: text } = await Swal.fire({
-            title: 'ตั้งชื่อโปรเจกต์ใหม่',
+            title: 'ตั้งชื่อโครงการใหม่',
             input: 'text',
-            inputPlaceholder: 'เช่น ติดตั้งกล้อง หมู่บ้าน A...',
+            inputPlaceholder: 'เช่น งานติดตั้ง... หมู่บ้าน A...',
             showCancelButton: true
         });
 
