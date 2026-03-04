@@ -195,7 +195,7 @@ $suppliers = $conn->query("SELECT * FROM suppliers");
                             <option value="admin">ผู้ดูแล (Admin)</option>
                         </select>
                     </div>
-                    <div class="col-md-1"><button type="submit" name="add_user" class="btn btn-primary w-100"><i class="fas fa-plus"></i></button></div>
+                    <div class="col-md-1"><button type="submit" name="add_user" class="btn btn-primary w-100"><i class="fas fa-plus"></i>เพิ่ม</button></div>
                 </form>
 
                 <table class="table table-bordered table-hover">

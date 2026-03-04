@@ -70,7 +70,7 @@ $withdrawers = $conn->query("SELECT * FROM withdrawers ORDER BY name ASC");
                 </div>
 
                 <div class="d-flex gap-2 align-items-center">
-                    <span class="badge bg-secondary fs-6">Job: <?php echo htmlspecialchars($proj['project_code']); ?></span>
+                    <span class="badge bg-secondary fs-6">Job:<?php echo htmlspecialchars($proj['project_code']); ?></span>
                     <?php if($is_closed): ?>
                         <span class="badge bg-danger"><i class="fas fa-lock"></i> ปิดงานแล้ว (Closed)</span>
                     <?php else: ?>

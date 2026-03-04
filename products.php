@@ -56,7 +56,6 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
         <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold text-primary"><i class="fas fa-list me-2"></i>รายการสินค้าทั้งหมด (Supply List)</h5>
-                <button class="btn btn-outline-success btn-sm rounded-pill" onclick="window.print()"><i class="fas fa-print me-1"></i> พิมพ์รายงาน</button>
             </div>
             
             <table id="allProductTable" class="table table-hover table-custom w-100">
