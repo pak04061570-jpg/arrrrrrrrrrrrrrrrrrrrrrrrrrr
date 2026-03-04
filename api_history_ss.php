@@ -64,8 +64,10 @@ while($row_data = $records->fetch_assoc()) {
     // ชื่อสินค้า
     $pro_name = $row_data['product_name'] ? '<div class="fw-bold text-dark">'.$row_data['product_name'].'</div>' : '<span class="text-muted small">- ไม่พบชื่อสินค้า -</span>';
     
-    // ชื่อโครงการ / ที่อยู่
-    $display_project_name = !empty($row_data['snapshot_name']) ? $row_data['snapshot_name'] : $row_data['current_name'];
+    // [✨ แก้ไขแล้ว] ชื่อโครงการ / ที่อยู่
+    // ให้ความสำคัญกับ current_name (ชื่อปัจจุบัน) ก่อน ถ้าไม่มีค่อยดึง snapshot_name
+    $display_project_name = !empty($row_data['current_name']) ? $row_data['current_name'] : $row_data['snapshot_name'];
+    
     if (empty($display_project_name) && !empty($row_data['project_id'])) {
         $display_project_name = '<span class="text-muted fst-italic">(โครงการถูกลบ)</span>';
     }

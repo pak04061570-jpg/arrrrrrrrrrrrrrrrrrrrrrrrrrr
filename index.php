@@ -222,9 +222,6 @@
         if(hasVal) $('#scanSerial').focus();
     });
 
-    /*$('#scanSerial').keypress(function(e){
-        if(e.which == 13) addStock();
-    }); */
     
         $('#scanSerial').keypress(function(e){
         if(e.which == 13) addToQueue(); 
@@ -336,27 +333,7 @@ function saveBatchStock() {
         }
     });
 }
-
-     /*function addStock() {
-        let barcode = $('#productSelect').val();
-        let sn = $('#scanSerial').val();
-        if(sn == "") return;
-
-        $.post("api_receive.php", { barcode: barcode, sn: sn }, function(res){
-            let data = JSON.parse(res);
-            if(data.status == 'success'){
-                const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 2000});
-                Toast.fire({icon: 'success', title: 'รับเข้า: ' + sn + ' เรียบร้อย'});
-                $('#scanSerial').val("").focus();
-                $("#proTable").load(location.href + " #proTable"); 
-            } else {
-                Swal.fire('Error', data.msg, 'error');
-                $('#scanSerial').val("");
-            }
-        });
-     }*/
-
-        
+   
     // 2. บันทึกสินค้าใหม่ (Create Product)
 function saveNewProduct() {
     let barcode = $('#new_barcode').val();

@@ -50,7 +50,7 @@
 
 <div class="main-content">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold text-secondary m-0"><i class="fas fa-history me-2"></i>ประวัติการรับเข้า / เบิกออก (Log)</h4>
+        <h4 class="fw-bold text-secondary m-0"><i class="fas fa-history me-2"></i>ประวัติการรับเข้า / เบิกออก / รับคืน (Log)</h4>
     </div>
 
     <div class="card card-custom">

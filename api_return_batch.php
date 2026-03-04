@@ -9,7 +9,7 @@ if (empty($data['items'])) {
     exit;
 }
 
-// [✨] ดึงชื่อผู้ทำรายการจาก Session อัตโนมัติ
+// ดึงชื่อผู้ทำรายการจาก Session อัตโนมัติ
 $operator = isset($_SESSION['name']) ? $_SESSION['name'] : 'Unknown';
 $note = $conn->real_escape_string($data['note']);
 $items = $data['items'];
@@ -27,21 +27,29 @@ foreach ($items as $sn) {
     $project_id = $item['project_id'];
     $barcode = $item['product_barcode'];
 
+    // ดึงชื่อโครงการออกมา
     $proj_q = $conn->query("SELECT project_name FROM projects WHERE id = '$project_id'");
-    $project_name = ($proj_q && $proj_q->num_rows > 0) ? $proj_q->fetch_assoc()['project_name'] : '';
+    $project_name = ($proj_q && $proj_q->num_rows > 0) ? $proj_q->fetch_assoc()['project_name'] : 'ไม่ระบุโครงการ';
+
+    // [✨] สร้างข้อความหมายเหตุใหม่ โดยเอาชื่อโครงการมาต่อกับหมายเหตุที่ผู้ใช้พิมพ์
+    $final_note = "คืนจาก: " . $project_name;
+    if (!empty($note)) {
+        $final_note .= " | หมายเหตุ: " . $note;
+    }
 
     $sql = "UPDATE product_serials SET project_id = NULL, status = 'available' WHERE serial_number = '$sn'";
     
     if($conn->query($sql)) {
         $conn->query("UPDATE products SET quantity = quantity + 1 WHERE barcode = '$barcode'");
         
-        // บันทึกประวัติพร้อมชื่อคนที่ล็อกอิน
+        // บันทึกประวัติ (ใช้ $final_note แทน $note ปกติ)
         $stmt = $conn->prepare("INSERT INTO product_history (serial_number, project_id, project_name, action_type, note, operator) VALUES (?, ?, ?, 'return', ?, ?)");
-        $stmt->bind_param("sisss", $sn, $project_id, $project_name, $note, $operator);
+        $stmt->bind_param("sisss", $sn, $project_id, $project_name, $final_note, $operator);
         
         if(!$stmt->execute()) {
+             // กรณีถ้าฐานข้อมูลเก่าไม่มีช่อง project_name ให้รันอันล่างแทน
              $stmt_old = $conn->prepare("INSERT INTO product_history (serial_number, project_id, action_type, note, operator) VALUES (?, ?, 'return', ?, ?)");
-             $stmt_old->bind_param("siss", $sn, $project_id, $note, $operator);
+             $stmt_old->bind_param("siss", $sn, $project_id, $final_note, $operator);
              $stmt_old->execute();
         }
         $success_count++;

@@ -66,10 +66,13 @@ if ($_POST['action'] == 'edit_info') {  // <-- สังเกตชื่อ ac
     $name = $conn->real_escape_string($_POST['name']);
     $code = $conn->real_escape_string($_POST['code']); // รับค่า code
 
-    // ตรวจสอบว่าแก้ไขได้สำเร็จหรือไม่
+    // 1. อัปเดตข้อมูลในตาราง projects หลัก
     $sql = "UPDATE projects SET project_name = '$name', project_code = '$code' WHERE id = $id";
     
     if($conn->query($sql)){
+        // [✨] 2. เพิ่มคำสั่งนี้: สั่งให้อัปเดตชื่อโครงการในตารางประวัติ (History) ตามไปด้วย
+        $conn->query("UPDATE product_history SET project_name = '$name' WHERE project_id = $id");
+
         echo "success";
     } else {
         header("HTTP/1.1 500 Internal Server Error");
