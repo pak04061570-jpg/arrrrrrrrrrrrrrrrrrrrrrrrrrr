@@ -46,7 +46,9 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
     <div class="row g-3 mb-4">
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><p>รายการสินค้า (SKUs)</p><h2><?php echo number_format($stat_items); ?></h2><i class="fas fa-tags stat-icon"></i></div></div>
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #10b981, #059669);"><p>จำนวนชิ้นรวม (Units)</p><h2><?php echo number_format($stat_qty); ?></h2><i class="fas fa-cubes stat-icon"></i></div></div>
+        
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><p>มูลค่าสินค้าคงคลัง (บาท)</p><h2><?php echo number_format($stat_value); ?></h2><i class="fas fa-coins stat-icon"></i></div></div>
+
         <div class="col-md-3"><div class="stat-card" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><p>สินค้าใกล้หมด (<5)</p><h2><?php echo number_format($stat_low); ?></h2><i class="fas fa-exclamation-triangle stat-icon"></i></div></div>
     </div>
 
@@ -64,18 +66,11 @@ $stat_low   = $conn->query("SELECT COUNT(*) as c FROM products WHERE quantity < 
     <th>ชื่อสินค้า</th>
     <th>ประเภท</th>      
     <th>Supplier</th>   
-    <?php if($_SESSION['role'] == 'admin'): ?>
-        <th class="text-end">ราคาขาย</th>
-    <?php endif; ?>
+    <th class="text-end">ราคาขาย</th>
     <th class="text-center">คงเหลือ</th>
-    <?php if($_SESSION['role'] == 'admin'): ?>
-        <th class="text-end">มูลค่ารวม</th>
-        <th class="text-center">สถานะ</th>
-        <th class="text-center" width="15%">จัดการ</th>
-    <?php else: ?>
-        <th class="text-center">สถานะ</th>
-        <th class="text-center">ดูรายละเอียด</th>
-    <?php endif; ?>
+    <th class="text-end">มูลค่ารวม</th>
+    <th class="text-center">สถานะ</th>
+    <th class="text-center" width="15%">จัดการ</th>
     </tr>
  </thead>
 <tbody>
@@ -106,25 +101,20 @@ while($row = $result->fetch_assoc()):
     <td><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle"><?php echo $row['type_name']; ?></span></td>
     <td><small class="text-secondary"><i class="fas fa-store me-1"></i><?php echo $row['supplier_name']; ?></small></td>
     
-    <?php if($_SESSION['role'] == 'admin'): ?>
-        <td class="text-end"><?php echo number_format($row['price_sell'], 2); ?></td>
-    <?php endif; ?>
+    <td class="text-end"><?php echo number_format($row['price_sell'], 2); ?></td>
     
     <td class="text-center"><span class="fw-bold fs-5"><?php echo $row['quantity']; ?></span></td>
     
-    <?php if($_SESSION['role'] == 'admin'): ?>
-        <td class="text-end text-muted small"><?php echo number_format($total_val, 2); ?></td>
-        <td class="text-center"><?php echo $status; ?></td>
-        <td class="text-center">
-             <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1"><i class="fas fa-eye"></i> ดู/แก้ไข</a>
+    <td class="text-end text-muted small"><?php echo number_format($total_val, 2); ?></td>
+    <td class="text-center"><?php echo $status; ?></td>
+    
+    <td class="text-center">
+        <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 <?php echo ($_SESSION['role'] == 'admin') ? 'me-1' : ''; ?>"><i class="fas fa-eye"></i> ดู/แก้ไข</a>
+        
+        <?php if($_SESSION['role'] == 'admin'): ?>
             <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteProduct(<?php echo $row['id']; ?>, '<?php echo $row['name']; ?>')"><i class="fas fa-trash-alt"></i> ลบ</button>
-        </td>
-    <?php else: ?>
-        <td class="text-center"><?php echo $status; ?></td>
-        <td class="text-center">
-            <a href="product_details.php?barcode=<?php echo $row['barcode']; ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="fas fa-eye"></i> ดูรายละเอียด</a>
-        </td>
-    <?php endif; ?>
+        <?php endif; ?>
+    </td>
 </tr>
 <?php endwhile; ?>    
 </tbody>
@@ -148,7 +138,7 @@ while($row = $result->fetch_assoc()):
         });
     });
 
-    // ฟังก์ชันลบสินค้า
+    // ฟังก์ชันลบสินค้า (จะมีให้กดเฉพาะ Admin)
     function deleteProduct(id, name) {
         Swal.fire({
             title: 'ลบสินค้า: ' + name + '?',
